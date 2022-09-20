@@ -2,6 +2,7 @@ import { Button, Card, CardContent, CircularProgress, Grid } from '@mui/material
 import { Field, Form, Formik } from 'formik';
 import { CheckboxWithLabel, TextField } from 'formik-material-ui';
 import React from 'react';
+import { boolean, number, object, string } from 'yup';
 
 interface IFormProps {
   fullName: string
@@ -9,25 +10,35 @@ interface IFormProps {
   termsAndConditions: boolean
 }
 
+const validationSchema = object({
+  fullName: string().required('Name is required').min(3, 'Full Name must contain minimum 3 characters').max(30),
+  donationsAmount: number().required().min(10, 'Minimum donation is 10 $'),
+  termsAndConditions: boolean().required().isTrue()
+})
+
+const formikInitialValues = {
+  fullName: "",
+  donationsAmount: 0,
+  termsAndConditions: false
+}
+const onSubmit = async (val: IFormProps) => {
+  console.log('my values', val);
+  return new Promise(resolve => {
+    return setTimeout(resolve, 2500)
+  })
+}
+
 export default function Home() {
-  const onSubmit = async (val: IFormProps) => {
-    console.log('my values', val);
-    return new Promise(resolve => {
-      return setTimeout(resolve, 2500)
-    })
-  }
 
   return (
     <Card>
       <CardContent>
-        <Formik initialValues={{
-          fullName: '',
-          donationsAmount: 0,
-          termsAndConditions: false
-        }} onSubmit={(values) => onSubmit(values)}>
+        <Formik initialValues={formikInitialValues}
+          validationSchema={validationSchema}
+          onSubmit={(values) => onSubmit(values)}>
           {({ values, errors, isSubmitting, }) => (
             <Form autoComplete='off'>
-              <Grid container direction='column' gap={5}>
+              <Grid container direction='column' spacing={4}>
                 <Grid item>
                   <Field
                     fullWidth
