@@ -72,7 +72,7 @@ export default function Home() {
           validationSchema={validationSchema}
           onSubmit={onSubmit}
         >
-          {({ values, errors, isSubmitting }) => (
+          {({ values, errors, isSubmitting, isValid }) => (
             <Form autoComplete='off'>
               <Grid container direction='column' spacing={4}>
                 <Grid item>
@@ -123,13 +123,13 @@ export default function Home() {
                                 />
                               </Grid>
                               <Grid item xs={12} sm="auto">
-                                <Button onClick={() => remove(index)}>Delete</Button>
+                                <Button disabled={isSubmitting} onClick={() => remove(index)}>Delete</Button>
                               </Grid>
                             </Grid>
                           ))}
 
                           <Grid>
-                            <Button variant='contained'
+                            <Button disabled={isSubmitting} variant='contained'
                               onClick={() => push({
                                 institution: '',
                                 percentage: 0
@@ -151,7 +151,7 @@ export default function Home() {
                 </Grid>
                 <Grid item>
                   <Button
-                    disabled={isSubmitting}
+                    disabled={!isValid || isSubmitting}
                     type='submit'
                     variant='contained'
                     color='primary'
