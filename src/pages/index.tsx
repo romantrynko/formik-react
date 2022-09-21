@@ -9,11 +9,11 @@ import {
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { CheckboxWithLabel, TextField } from 'formik-material-ui';
 import React from 'react';
-import { boolean, number, object, string } from 'yup';
+import { boolean, number, object, string, array, ValidationError } from 'yup';
 
 
 interface IDonations {
-  institution: number
+  institution: string
   percentage: number
 }
 interface IFormProps {
@@ -29,7 +29,25 @@ const validationSchema = object({
     .min(3, 'Full Name must contain minimum 3 characters')
     .max(30),
   donationsAmount: number().required().min(10, 'Minimum donation is 10 $'),
-  termsAndConditions: boolean().required().isTrue()
+  termsAndConditions: boolean().required().isTrue(),
+  donations: array(object({
+    institution: string().required().min(2).max(20),
+    percentage: number().required().min(1).max(100)
+  })).min(1).max(3).test((
+    donations: Array<{
+      percentage: number,
+      institution: string
+    }>
+  ) => {
+    const sum = donations.reduce((acc, curr) => acc + curr.percentage, 0)
+    console.log(sum, 'Donate');
+
+    if (sum !== 100) {
+      return new ValidationError(`Percentage should be 100% but you have ${sum}%`, undefined, 'donations')
+    }
+    return true
+
+  })
 });
 
 const formikInitialValues = {
@@ -41,7 +59,7 @@ const formikInitialValues = {
 const onSubmit = async (val: IFormProps) => {
   console.log('my values', val);
   return new Promise((resolve) => {
-    return setTimeout(resolve, 2500);
+    return setTimeout(resolve, 1500);
   });
 };
 
@@ -52,7 +70,7 @@ export default function Home() {
         <Formik
           initialValues={formikInitialValues}
           validationSchema={validationSchema}
-          onSubmit={(values) => onSubmit(values)}
+          onSubmit={onSubmit}
         >
           {({ values, errors, isSubmitting }) => (
             <Form autoComplete='off'>
@@ -88,25 +106,34 @@ export default function Home() {
 
                           {values.donations.map((_, index) => (
                             <Grid container item spacing={3} >
-                              <Grid item>
-                                <Field name={`donation[${index}].institution`} component={TextField} label='Institution'
+                              <Grid item xs={12}>
+                                <Field
+                                  fullWidth
+                                  name={`donations[${index}].institution`}
+                                  component={TextField}
+                                  label='Institution'
                                 />
                               </Grid>
-                              <Grid item>
-                                <Field name={`donation[${index}].percentage`} component={TextField} label='Percentage'
+                              <Grid item xs={12}>
+                                <Field
+                                  fullWidth
+                                  name={`donations[${index}].percentage`}
+                                  component={TextField}
+                                  label='Percentage'
                                 />
                               </Grid>
-                              <Grid item>
+                              <Grid item xs={12} sm="auto">
                                 <Button onClick={() => remove(index)}>Delete</Button>
                               </Grid>
                             </Grid>
                           ))}
 
                           <Grid>
-                            <Button onClick={() => push({
-                              institution: '',
-                              percentage: 0
-                            })}>Add Donation</Button>
+                            <Button variant='contained'
+                              onClick={() => push({
+                                institution: '',
+                                percentage: 0
+                              })}>Add Donation</Button>
                           </Grid>
                         </>
                       )
